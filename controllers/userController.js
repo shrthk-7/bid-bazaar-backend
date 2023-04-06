@@ -40,6 +40,26 @@ exports.login = async (req, res, next) => {
   }
 };
 
+exports.update = async (req, res, next) => {
+  const { displayName, instagram, facebook, linkedIn, twitter, description } =
+    req.body;
+
+  const user = req.user;
+  if (displayName) user.displayName = displayName;
+  if (instagram) user.socials.instagram = instagram;
+  if (facebook) user.socials.facebook = facebook;
+  if (linkedIn) user.socials.linkedIn = linkedIn;
+  if (twitter) user.socials.twitter = twitter;
+  if (description) user.description = description;
+
+  await user.save();
+  return res.status(200).json({
+    status: 'success',
+    message: 'user updated successfully',
+    user: user,
+  });
+};
+
 exports.authenticate = async (req, res, next) => {
   try {
     const decoded = await promisify(jwt.verify)(

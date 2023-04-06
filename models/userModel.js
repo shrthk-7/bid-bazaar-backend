@@ -1,6 +1,13 @@
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 
+const socialsSchema = new mongoose.Schema({
+  instagram: String,
+  facebook: String,
+  linkedIn: String,
+  twitter: String,
+});
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -16,6 +23,34 @@ const userSchema = new mongoose.Schema({
   },
   photoURL: {
     type: String,
+  },
+  socials: {
+    type: socialsSchema,
+    default: {},
+  },
+  description: {
+    type: String,
+  },
+  listedProducts: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: 'Product',
+  },
+  boughtProducts: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: 'Product',
+  },
+  currentBids: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: 'Product',
+  },
+  balance: {
+    type: Number,
+    default: 1000,
+    required: true,
+  },
+  reputation: {
+    type: Number,
+    default: 0,
   },
 });
 
