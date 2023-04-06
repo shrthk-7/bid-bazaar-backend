@@ -15,6 +15,7 @@ app.use(mongoSanitize());
 
 // ---------------------routers---------------------
 app.use('/user', router.userRouter);
+app.use('/marketplace', router.marketplaceRouter)
 
 app.all((req, res, next) => {
   res.status(404).json({
