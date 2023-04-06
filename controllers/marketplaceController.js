@@ -1,4 +1,6 @@
 const { Product } = require('../models');
+const { APIFeatures } = require('../utils');
+
 const cloudinary = require('cloudinary');
 const http = require('http');
 const socketio = require('socket.io');
@@ -49,6 +51,8 @@ exports.create = async (req, res, next) => {
       end: end,
     });
 
+    await createdProduct.save();
+
     return res.status(201).json({
       status: 'success',
       message: 'product added successfully',
@@ -58,4 +62,19 @@ exports.create = async (req, res, next) => {
     console.log({ error });
     res.send('err');
   }
+};
+
+exports.getProducts = async (req, res, next) => {
+  const features = new APIFeatures(Product.find(), req.query)
+    .filter()
+    .sort()
+    .limitFields()
+    .paginate();
+
+  const products = await features.query;
+
+  res.status(200).json({
+    status: 'success',
+    products: products,
+  });
 };

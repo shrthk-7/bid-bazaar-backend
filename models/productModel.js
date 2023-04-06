@@ -28,7 +28,7 @@ const productSchema = new mongoose.Schema({
     type: [String],
     validate: {
       validator: function () {
-        return this.productPhotos.length >= 1;
+        return this.photos.length >= 1;
       },
     },
     message: 'Atleast one image required',
@@ -37,7 +37,7 @@ const productSchema = new mongoose.Schema({
     type: [String],
     validate: {
       validator: function () {
-        return this.Categories.length >= 1;
+        return this.categories.length >= 1;
       },
     },
     message: 'Atleast one category required',
@@ -46,7 +46,7 @@ const productSchema = new mongoose.Schema({
     type: Number,
     require: true,
   },
-  allBids: {
+  bidHistory: {
     type: [pastBidSchema],
   },
   currentHighestBidder: {
@@ -67,6 +67,7 @@ const productSchema = new mongoose.Schema({
   reputation: {
     type: Number,
     required: true,
+    default: 0,
   },
 });
 
