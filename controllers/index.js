@@ -1,5 +1,5 @@
 const userController = require('./userController');
 
-const marketplaceController = require('./marketplaceController')
+const marketplaceController = require('./marketplaceController');
 
 module.exports = { userController, marketplaceController };
