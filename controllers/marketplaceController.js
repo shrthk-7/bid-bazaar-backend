@@ -1,4 +1,5 @@
 const { Product } = require('../models');
+const cloudinary = require('cloudinary');
 const http = require('http');
 const socketio = require('socket.io');
 
@@ -8,4 +9,53 @@ exports.getProducts = async (req, res, next) => {
     status: 'success',
     products: products,
   });
+};
+
+exports.create = async (req, res, next) => {
+  try {
+    const { title, description, photos, categories, start, end } = req.body;
+    if (
+      !(
+        title &&
+        description &&
+        photos &&
+        categories &&
+        categories.length >= 1 &&
+        start &&
+        end
+      )
+    ) {
+      return res.status(400).json({
+        status: 'fail',
+        message: 'provide all fields',
+      });
+    }
+
+    const savedPhotos = await Promise.all(
+      photos.map(photo => {
+        return cloudinary.v2.uploader.upload(photo, {
+          folder: 'bid-bazaar',
+        });
+      })
+    );
+
+    const createdProduct = new Product({
+      owner: req.user._id,
+      title: title,
+      description: description,
+      photos: savedPhotos.map(photo => photo.url),
+      categories: categories,
+      start: start,
+      end: end,
+    });
+
+    return res.status(201).json({
+      status: 'success',
+      message: 'product added successfully',
+      product: createdProduct,
+    });
+  } catch (error) {
+    console.log({ error });
+    res.send('err');
+  }
 };

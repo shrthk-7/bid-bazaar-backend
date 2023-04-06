@@ -1,42 +1,53 @@
 const mongoose = require('mongoose');
 
+const pastBidSchema = new mongoose.Schema(
+  {
+    time: {
+      type: Date,
+    },
+    bid: {
+      type: Number,
+    },
+  },
+  { id: false }
+);
+
 const productSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
-  productTitle: {
+  title: {
     type: String,
     required: true,
   },
-  productDescription: {
+  description: {
     type: String,
   },
-  productPhotos: {
+  photos: {
     type: [String],
     validate: {
       validator: function () {
         return this.productPhotos.length >= 1;
       },
     },
-    message: ' Atleast one image required',
+    message: 'Atleast one image required',
   },
-  Categories: {
+  categories: {
     type: [String],
     validate: {
       validator: function () {
         return this.Categories.length >= 1;
       },
     },
-    message: ' Atleast one category required',
-  },
-  startingbid: {
-    type: Number,
-    required: true,
+    message: 'Atleast one category required',
   },
   currentbid: {
     type: Number,
     require: true,
+  },
+  allBids: {
+    type: [pastBidSchema],
   },
   currentHighestBidder: {
     type: mongoose.Schema.Types.ObjectId,
@@ -44,13 +55,12 @@ const productSchema = new mongoose.Schema({
   },
   isLive: {
     type: Boolean,
-    required: true,
   },
-  startingTime: {
+  start: {
     type: Date,
     default: Date.now,
   },
-  endingDate: {
+  end: {
     type: Date,
     default: Date.now,
   },
