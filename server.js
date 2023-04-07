@@ -1,6 +1,8 @@
 const app = require('./app');
 const mongoose = require('mongoose');
 const cloudinary = require('cloudinary');
+const SocketManager = require('./Socket.js')
+
 
 const connectMongoDB = async () => {
   try {
@@ -23,7 +25,5 @@ cloudinary.config({
 });
 
 connectMongoDB().then(() => {
-  app.listen(process.env.PORT, () => {
-    console.log(`listening on localhost:${process.env.PORT}`);
-  });
+  SocketManager(app);
 });
