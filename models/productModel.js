@@ -16,6 +16,7 @@ const productSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
+    required: true,
   },
   title: {
     type: String,
@@ -32,6 +33,10 @@ const productSchema = new mongoose.Schema({
       },
     },
     message: 'Atleast one image required',
+  },
+  bidType:{
+    type: String,
+    default : "standard",
   },
   categories: {
     type: [String],
