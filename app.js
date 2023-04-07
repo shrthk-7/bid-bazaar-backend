@@ -18,6 +18,7 @@ app.use(cors);
 // ---------------------routers---------------------
 app.use('/user', router.userRouter);
 app.use('/marketplace', router.marketplaceRouter);
+app.use('/product', router.productRouter);
 
 app.all((req, res, next) => {
   res.status(404).json({

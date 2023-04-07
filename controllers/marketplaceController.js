@@ -1,9 +1,7 @@
-const { Product } = require('../models');
+const { Product , User} = require('../models');
 const { APIFeatures } = require('../utils');
 
 const cloudinary = require('cloudinary');
-const http = require('http');
-const socketio = require('socket.io');
 
 exports.getProducts = async (req, res, next) => {
   let products = await Product.find();
@@ -15,12 +13,14 @@ exports.getProducts = async (req, res, next) => {
 
 exports.create = async (req, res, next) => {
   try {
-    const { title, description, photos, categories, start, end } = req.body;
+    const { title, description, photos, bidType, categories, start, end } = req.body;
     if (
       !(
         title &&
         description &&
         photos &&
+        photos.length >= 1 && 
+        bidType &&
         categories &&
         categories.length >= 1 &&
         start &&
@@ -46,12 +46,21 @@ exports.create = async (req, res, next) => {
       title: title,
       description: description,
       photos: savedPhotos.map(photo => photo.url),
+      bidType: bidType,
       categories: categories,
       start: start,
       end: end,
     });
 
-    await createdProduct.save();
+    var createdproductId = "";
+
+    await createdProduct.save(function(err, room){
+      createdproductId = room._id;
+    });
+
+    var owner = User.findById(createdProduct.owner)
+    owner.listedProducts.push(createdproductId);
+    await owner.save();
 
     return res.status(201).json({
       status: 'success',
