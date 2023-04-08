@@ -34,9 +34,9 @@ const productSchema = new mongoose.Schema({
     },
     message: 'Atleast one image required',
   },
-  bidType:{
+  bidType: {
     type: String,
-    default : "standard",
+    default: "standard",
   },
   categories: {
     type: [String],
@@ -58,8 +58,13 @@ const productSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
+  reputation: {
+    type: Number,
+    default: 0,
+  },
   isLive: {
     type: Boolean,
+    default: true,
   },
   start: {
     type: Date,
@@ -75,7 +80,7 @@ const productSchema = new mongoose.Schema({
     default: 0,
   },
 },
-{collection:"Product"});
+  { collection: "Product" });
 
 const Product = mongoose.model('Product', productSchema);
 

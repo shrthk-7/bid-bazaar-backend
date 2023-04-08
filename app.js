@@ -20,6 +20,18 @@ app.use('/user', router.userRouter);
 app.use('/marketplace', router.marketplaceRouter);
 app.use('/product', router.productRouter);
 
+const { User, Product } = require('./models')
+
+app.get('/', async (req, res, next) => {
+  const userCount = await User.count({});
+  const productCount = await Product.count({});
+
+  return res.status('200').json({
+    totalUsers: userCount,
+    totalProducts: productCount
+  })
+})
+
 app.all((req, res, next) => {
   res.status(404).json({
     status: 'fail',
