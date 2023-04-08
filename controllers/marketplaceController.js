@@ -1,32 +1,28 @@
-const { Product , User} = require('../models');
+const { Product, User } = require('../models');
 const { APIFeatures } = require('../utils');
 
 const cloudinary = require('cloudinary');
 
 exports.getProducts = async (req, res, next) => {
-  let products = await Product.find();
-  return res.status(200).json({
-    status: 'success',
-    products: products,
-  });
+  try {
+    let products = await Product.find();
+    return res.status(200).json({
+      status: 'success',
+      products: products,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 'error',
+      message: 'something went wrong',
+    });
+  }
 };
 
 exports.create = async (req, res, next) => {
   try {
-    const { title, description, photos, bidType, categories, start, end } = req.body;
-    if (
-      !(
-        title &&
-        description &&
-        photos &&
-        photos.length >= 1 && 
-        bidType &&
-        categories &&
-        categories.length >= 1 &&
-        start &&
-        end
-      )
-    ) {
+    const { title, photos, bidType, category, start, end } = req.body;
+    console.log({ title, photos, bidType, category, start, end });
+    if (!(title && photos && bidType && category && start && end)) {
       return res.status(400).json({
         status: 'fail',
         message: 'provide all fields',
@@ -44,24 +40,18 @@ exports.create = async (req, res, next) => {
     const createdProduct = new Product({
       owner: req.user._id,
       title: title,
-      description: description,
+      description: 'abc',
       photos: savedPhotos.map(photo => photo.url),
       bidType: bidType,
-      categories: categories,
+      category: category,
       start: start,
       end: end,
     });
 
-    var createdproductId = "";
+    req.user.listedProducts.push(createdProduct._id);
+    await req.user.save();
 
-    await createdProduct.save(function(err, room){
-      createdproductId = room._id;
-    });
-
-    var owner = User.findById(createdProduct.owner)
-    owner.listedProducts.push(createdproductId);
-    await owner.save();
-
+    console.log(createdProduct);
     return res.status(201).json({
       status: 'success',
       message: 'product added successfully',
@@ -74,16 +64,23 @@ exports.create = async (req, res, next) => {
 };
 
 exports.getProducts = async (req, res, next) => {
-  const features = new APIFeatures(Product.find(), req.query)
-    .filter()
-    .sort()
-    .limitFields()
-    .paginate();
+  try {
+    const features = new APIFeatures(Product.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
 
-  const products = await features.query;
+    const products = await features.query;
 
-  res.status(200).json({
-    status: 'success',
-    products: products,
-  });
+    res.status(200).json({
+      status: 'success',
+      products: products,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 'error',
+      message: 'something went wrong',
+    });
+  }
 };
