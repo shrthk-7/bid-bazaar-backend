@@ -52,8 +52,12 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  likedProducts: {
+    type: [mongoose.Schema.Types.ObjectId],
+    ref: "Product"
+  },
 },
-{collection:"users"});
+  { collection: "users" });
 
 userSchema.methods.generateJWTToken = function () {
   return jwt.sign({ uid: this.uid }, process.env.JWT_SECRET);
