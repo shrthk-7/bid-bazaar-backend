@@ -3,7 +3,8 @@ const express = require('express');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const bodyParser = require('body-parser');
-const cors = require('./middlewares/cors');
+// const cors = require('./middlewares/cors');
+const cors = require('cors');
 const app = express();
 
 const router = require('./routes');
@@ -13,7 +14,17 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(helmet());
 app.use(mongoSanitize());
-app.use(cors);
+// app.use(
+//   cors({
+//     origin: '*',
+//     methods: ['GET', 'POST', 'OPTIONS', 'HEADER'],
+//   })
+// );
+app.use(cors());
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  next();
+});
 
 // ---------------------routers---------------------
 app.use('/user', router.userRouter);

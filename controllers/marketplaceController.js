@@ -21,7 +21,6 @@ exports.getProducts = async (req, res, next) => {
 exports.create = async (req, res, next) => {
   try {
     const { title, photos, bidType, category, start, end } = req.body;
-    console.log({ title, photos, bidType, category, start, end });
     if (!(title && photos && bidType && category && start && end)) {
       return res.status(400).json({
         status: 'fail',
@@ -47,6 +46,8 @@ exports.create = async (req, res, next) => {
       start: start,
       end: end,
     });
+
+    await createdProduct.save();
 
     req.user.listedProducts.push(createdProduct._id);
     await req.user.save();

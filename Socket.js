@@ -24,27 +24,24 @@ const SocketManager = app => {
   });
 
   io.on('connection', async socket => {
-    socket.on('connect-to-room', async (productId, cb) => {
+    socket.on('connect-to-room', async productId => {
       socket.join(productId);
       const product = await Product.findById(productId);
-      cb(`Joined ${productId}`);
       if (product.bidType === 'anonymous') {
-        delete product.currentbid;
+        delete product.currentHighestBidder;
       }
       emitProduct(product, socket);
     });
-
 
     socket.on('like-event', async (userId, productId, isLiked) => {
       const user = await User.findById(userId);
       if (isLiked === true) {
         const isProduct = user.likedProducts.find(function (element) {
           return element === productId;
-        })
+        });
         if (isProduct !== undefined) {
           return;
-        }
-        else {
+        } else {
           const product = Product.findById(productId);
           const owner = User.findById(product.owner);
           product.reputation++;
@@ -55,92 +52,86 @@ const SocketManager = app => {
           await owner.save();
           emitProductstoRoom(product, io, productId);
         }
-      }
-      else {
+      } else {
         const isProduct = user.likedProducts.find(function (element) {
           return element === productId;
-        })
+        });
         if (isProduct === undefined) {
           return;
-        }
-        else {
+        } else {
           const product = Product.findById(productId);
           const owner = User.findById(product.owner);
           product.reputation--;
           owner.reputation--;
           const filteredLikes = user.likedProducts.filter(function (element) {
-            return (element !== productId);
-          })
-          user.likedProducts = filteredLikes
+            return element !== productId;
+          });
+          user.likedProducts = filteredLikes;
           await product.save();
           await user.save();
           await owner.save();
           emitProductstoRoom(product, io, productId);
         }
       }
-    })
-
+    });
 
     socket.on('newBid', async (userId, productId, newBidinString) => {
-
       const product = await Product.findById(productId);
+      console.log(newBidinString);
+      const newBid = parseInt(newBidinString);
 
-
-      newBid = parseInt(newBidinString);
-
-      if (product.bidType === "standard" || product.bidType === "anonymous") {
-        if (!product || product.currentbid >= newBid) return;
+      if (product.bidType === 'standard' || product.bidType === 'anonymous') {
+        if (!product || product.currentHighestBid >= newBid) return;
 
         //Update Current highest bidder data
         const currBidder = await User.findById(userId);
-        if (currBidder.balance < newBid) return;
+        if (!currBidder) return;
+        // if (currBidder.balance < newBid) return;
         currBidder.balance -= newBid;
         currBidder.currentBids.push(productId);
         await currBidder.save();
 
         //Update Previous highest bidder data
         const prevBidder = await User.findById(product.currentHighestBidder);
-        prevBidder.balance += product.currentbid;
-        prevBidder.currentBids = prevBidder.currentBids.filter(
-          pId => !pId.equals(productId)
-        );
-        await prevBidder.save();
+        if (prevBidder) {
+          prevBidder.balance += product.currentHighestBid;
+          prevBidder.currentBids = prevBidder.currentBids.filter(
+            pId => !pId.equals(productId)
+          );
+          await prevBidder.save();
+        }
 
         //Update Product data
         product.currentHighestBidder = userId;
-        product.currentbid = newBid;
+        product.currentHighestBid = newBid;
         product.bidHistory.push({ time: Date.now(), bid: newBid });
         await product.save();
-
-      }
-      else if (product.bidType === 'reverse') {
-        if (!product || product.currentbid <= newBid) return;
+      } else if (product.bidType === 'reverse') {
+        if (!product || product.currentHighestBid <= newBid) return;
 
         //Update Current Lowest Bidder
         const currBidder = await User.findById(userId);
         currBidder.currentBids.push(productId);
         await currBidder.save();
 
-
         //Update Previous Lowest Bidder
         const prevBidder = await User.findById(product.currentHighestBidder);
-        prevBidder.currentBids = prevBidder.currentBids.filter(
-          pId => !pId.equals(productId)
-        );
-        await prevBidder.save();
+        if (prevBidder) {
+          prevBidder.currentBids = prevBidder.currentBids.filter(
+            pId => !pId.equals(productId)
+          );
+          await prevBidder.save();
+        }
 
         //Update Product Info
         product.currentHighestBidder = userId;
-        product.currentbid = newBid;
+        product.currentHighestBid = newBid;
         product.bidHistory.push({ time: Date.now(), bid: newBid });
-        await product.save();
-
-      }
-      else {
+        await (await product.save()).populate('currentHighestBidder owner');
+      } else {
         return;
       }
       emitProductstoRoom(product, io, productId);
-
     });
   });
 };

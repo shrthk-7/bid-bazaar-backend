@@ -3,6 +3,9 @@ const { User } = require('../models');
 const { promisify } = require('util');
 
 exports.getUser = async (req, res, next) => {
+  const user = req.user;
+  await user.populate('currentBids listedProducts boughtProducts');
+  console.log(user);
   req.user.uid = undefined;
   return res.status(200).json({
     status: 'success',
@@ -74,6 +77,7 @@ exports.authenticate = async (req, res, next) => {
       });
     }
     req.user = user;
+    console.log(user);
     next();
   } catch (error) {
     console.log({ error });
