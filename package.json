@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js",
-    "pretty": "prettier --write ."
+    "pretty": "prettier --write .",
+    "build": "esbuild server.js --bundle --platform=node --target=node18 --outfile=build/main.js --minify"
   },
   "author": "",
   "license": "ISC",
@@ -15,6 +16,7 @@
     "cloudinary": "^1.35.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
+    "esbuild": "^0.17.16",
     "express": "^4.18.2",
     "express-mongo-sanitize": "^2.2.0",
     "firebase": "^9.19.1",
