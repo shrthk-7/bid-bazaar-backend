@@ -2,18 +2,32 @@ const socketio = require('socket.io');
 const http = require('http');
 const { Product, User } = require('./models');
 
+/*
+  productinfo
+  like-event
+  newBid
+*/
+
+const Events = {
+  productInfo: 'productinfo',
+  connection: 'connection',
+  connectToRoom: 'connect-to-room',
+  likeProduct: 'like-event',
+  newBid: 'newBid',
+};
+
 const emitProduct = (product, socket) => {
-  socket.emit('productinfo', product);
+  socket.emit(Events.productInfo, product);
 };
 const emitProductstoRoom = (product, io, productId) => {
-  io.to(productId).emit('productinfo', product);
+  io.to(productId).emit(Events.productInfo, product);
 };
 
 const SocketManager = app => {
   const server = http.createServer(app);
 
   server.listen(process.env.PORT, () => {
-    console.log('Server up and running');
+    console.log(`listening on localhost:${process.env.PORT}`);
   });
 
   const io = socketio(server, {
@@ -23,8 +37,8 @@ const SocketManager = app => {
     },
   });
 
-  io.on('connection', async socket => {
-    socket.on('connect-to-room', async productId => {
+  io.on(Events.connection, async socket => {
+    socket.on(Events.connectToRoom, async ({ productId }) => {
       socket.join(productId);
       const product = await Product.findById(productId);
       if (product.bidType === 'anonymous') {
@@ -33,7 +47,7 @@ const SocketManager = app => {
       emitProduct(product, socket);
     });
 
-    socket.on('like-event', async (userId, productId, isLiked) => {
+    socket.on(Events.likeProduct, async ({ userId, productId, isLiked }) => {
       const user = await User.findById(userId);
       if (isLiked === true) {
         const isProduct = user.likedProducts.find(function (element) {
@@ -75,10 +89,9 @@ const SocketManager = app => {
       }
     });
 
-    socket.on('newBid', async (userId, productId, newBidinString) => {
+    socket.on(Events.newBid, async ({ userId, productId, newBid }) => {
       const product = await Product.findById(productId);
-      console.log(newBidinString);
-      const newBid = parseInt(newBidinString);
+      newBid = parseInt(newBid);
 
       if (product.bidType === 'standard' || product.bidType === 'anonymous') {
         if (!product || product.currentHighestBid >= newBid) return;
