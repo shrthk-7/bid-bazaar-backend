@@ -29,7 +29,6 @@ app.use((req, res, next) => {
 // ---------------------routers---------------------
 app.use('/user', router.userRouter);
 app.use('/marketplace', router.marketplaceRouter);
-app.use('/product', router.productRouter);
 
 const { User, Product } = require('./models');
 
