@@ -1,20 +1,6 @@
 const socketio = require('socket.io');
-const http = require('http');
 const { Product, User } = require('./models');
-
-/*
-  productinfo
-  like-event
-  newBid
-*/
-
-const Events = {
-  productInfo: 'productinfo',
-  connection: 'connection',
-  connectToRoom: 'connect-to-room',
-  likeProduct: 'like-event',
-  newBid: 'newBid',
-};
+const { Events } = require('./utils');
 
 const emitProduct = (product, socket) => {
   socket.emit(Events.productInfo, product);
@@ -23,13 +9,7 @@ const emitProductstoRoom = (product, io, productId) => {
   io.to(productId).emit(Events.productInfo, product);
 };
 
-const SocketManager = app => {
-  const server = http.createServer(app);
-
-  server.listen(process.env.PORT, () => {
-    console.log(`listening on localhost:${process.env.PORT}`);
-  });
-
+const SocketManager = server => {
   const io = socketio(server, {
     cors: {
       origin: '*',
