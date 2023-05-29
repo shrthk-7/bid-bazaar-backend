@@ -1,16 +1,25 @@
 const { Product, User } = require('../models');
-const { APIFeatures } = require('../utils');
+const { APIFeatures, Cache } = require('../utils');
 
 const cloudinary = require('cloudinary');
 
 exports.getProducts = async (req, res, next) => {
   try {
-    let products = await Product.find();
+    let products = Cache.get('all-products');
+
+    if (!products) {
+      products = await Product.find();
+      Cache.set('all-products', JSON.stringify(products));
+    } else {
+      products = JSON.parse(products);
+    }
+
     return res.status(200).json({
       status: 'success',
       products: products,
     });
   } catch (error) {
+    console.log({ error });
     return res.status(500).json({
       status: 'error',
       message: 'something went wrong',
@@ -48,12 +57,12 @@ exports.create = async (req, res, next) => {
     });
 
     await createdProduct.save();
+    Cache.del('all-products');
 
     req.user.listedProducts.push(createdProduct._id);
     await req.user.save();
 
-    console.log(createdProduct);
-    return res.status(201).json({
+    res.status(201).json({
       status: 'success',
       message: 'product added successfully',
       product: createdProduct,
@@ -61,27 +70,5 @@ exports.create = async (req, res, next) => {
   } catch (error) {
     console.log({ error });
     res.send('err');
-  }
-};
-
-exports.getProducts = async (req, res, next) => {
-  try {
-    const features = new APIFeatures(Product.find(), req.query)
-      .filter()
-      .sort()
-      .limitFields()
-      .paginate();
-
-    const products = await features.query;
-
-    res.status(200).json({
-      status: 'success',
-      products: products,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      status: 'error',
-      message: 'something went wrong',
-    });
   }
 };

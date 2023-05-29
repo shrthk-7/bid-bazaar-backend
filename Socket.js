@@ -41,31 +41,28 @@ const SocketManager = server => {
           product.reputation++;
           owner.reputation++;
           user.likedProducts.push(productId);
-          await product.save();
-          await user.save();
-          await owner.save();
+          await Promise.all([product.save(), user.save(), owner.save()]);
           emitProductstoRoom(product, io, productId);
         }
       } else {
         const isProduct = user.likedProducts.find(function (element) {
           return element === productId;
         });
-        if (isProduct === undefined) {
-          return;
-        } else {
-          const product = Product.findById(productId);
-          const owner = User.findById(product.owner);
-          product.reputation--;
-          owner.reputation--;
-          const filteredLikes = user.likedProducts.filter(function (element) {
-            return element !== productId;
-          });
-          user.likedProducts = filteredLikes;
-          await product.save();
-          await user.save();
-          await owner.save();
-          emitProductstoRoom(product, io, productId);
-        }
+
+        if (isProduct === undefined) return;
+
+        const product = Product.findById(productId);
+        const owner = User.findById(product.owner);
+        product.reputation--;
+        owner.reputation--;
+        const filteredLikes = user.likedProducts.filter(function (element) {
+          return element !== productId;
+        });
+        user.likedProducts = filteredLikes;
+        await product.save();
+        await user.save();
+        await owner.save();
+        emitProductstoRoom(product, io, productId);
       }
     });
 

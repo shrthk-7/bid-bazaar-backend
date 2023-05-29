@@ -1,9 +1,9 @@
 require('dotenv').config({ path: './.env' });
+
 const express = require('express');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const bodyParser = require('body-parser');
-// const cors = require('./middlewares/cors');
 const cors = require('cors');
 const app = express();
 
@@ -14,12 +14,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(helmet());
 app.use(mongoSanitize());
-// app.use(
-//   cors({
-//     origin: '*',
-//     methods: ['GET', 'POST', 'OPTIONS', 'HEADER'],
-//   })
-// );
 app.use(cors());
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
